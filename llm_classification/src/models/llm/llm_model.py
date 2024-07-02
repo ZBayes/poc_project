@@ -25,7 +25,7 @@ class QWen2Model:
     
     def _read_config_(self, config):
         tmp_config = {}
-        tmp_config["max_length"] = config.get("max_length", 2048)
+        # tmp_config["max_length"] = config.get("max_length", 2048)
         tmp_config["num_beams"] = config.get("num_beams", 1)
         tmp_config["do_sample"] = config.get("do_sample", False)
         tmp_config["top_k"] = config.get("top_k", 1)

@@ -55,7 +55,7 @@ class VecLlmClassifier:
         request_prompt = request_prompt.replace("<options>", options_str)
         request_prompt = request_prompt.replace("<options_detail>", options_detail_str)
         request_prompt = request_prompt.replace("<query>", query)
-        logger.info(request_prompt)
+        # logger.info(request_prompt)
 
         # 3.2 请求大模型
         llm_response = self.llm.predict(request_prompt)
@@ -70,6 +70,7 @@ class VecLlmClassifier:
         # logger.info("parse result: {}".format(result))
 
         # 4. 返回结果
+        logger.info("response: {}".format(result))
         return result
 
 if __name__ == "__main__":

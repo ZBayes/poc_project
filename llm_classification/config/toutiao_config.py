@@ -1,5 +1,6 @@
 VEC_MODEL_PATH = "C:/work/tool/huggingface/models/simcse-chinese-roberta-wwm-ext"
-VEC_INDEX_DATA = "vec_index_toutiao_20240629"
+# VEC_INDEX_DATA = "vec_index_toutiao_20240629"
+VEC_INDEX_DATA = "vec_index_toutiao_20240702_FEW"
 
 LLM_PATH = "C:/work/tool/qwen2-1.5b-instruct"
 LLM_CONFIG = {"max_length": 2048,

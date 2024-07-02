@@ -15,14 +15,16 @@ from src.searcher.vec_searcher.vec_searcher import VecSearcher
 
 if __name__ == "__main__":
     # 0. 必要配置
-    VERSION = "20240629"
+    MODE = "DEBUG"
+    # MODE = "PRO"
+    MODE = "FEW"
+
+    VERSION = "20240702"
     VEC_MODEL_PATH = "C:/work/tool/huggingface/models/simcse-chinese-roberta-wwm-ext"
     SOURCE_INDEX_DATA_PATH = "./data/toutiao_cat_data/toutiao_cat_data.txt" # 数据来源：https://github.com/aceimnorstuvwxz/toutiao-text-classfication-dataset
-    VEC_INDEX_DATA = "vec_index_toutiao_{}".format(VERSION)
-    TESE_DATA_PATH = "./data/toutiao_cat_data/test_set_{}.txt".format(VERSION)
+    VEC_INDEX_DATA = "vec_index_toutiao_{}_{}".format(VERSION,MODE)
+    TESE_DATA_PATH = "./data/toutiao_cat_data/test_set_{}_{}.txt".format(VERSION,MODE)
     RANDOM_SEED = 100
-    # MODE = "DEBUG"
-    MODE = "PRO"
 
     DEVICE = torch.device('cuda' if torch.cuda.is_available() else "cpu")
     TEST_SIZE = 0.1
@@ -55,16 +57,38 @@ if __name__ == "__main__":
     vec_model = VectorizeModel(VEC_MODEL_PATH, DEVICE)
     index_dim = len(vec_model.predict_vec("你好啊")[0])
     # 1.2 加载数据
-    source_index_data = load_toutiao_data(SOURCE_INDEX_DATA_PATH)
+    toutiao_index_data = load_toutiao_data(SOURCE_INDEX_DATA_PATH)
+    source_index_data = copy.deepcopy(toutiao_index_data)
     logger.info("load data done: {}".format(len(source_index_data)))
     if MODE == "DEBUG":
         random.shuffle(source_index_data)
-        source_index_data = source_index_data[:100000]
-    source_index_data_new = []
+        source_index_data = source_index_data[:10000]
+    elif MODE == "FEW":
+        new_source_data = []
+        class_dict_cal = {}
+        test_list = []
+        tmp_idx = 0
+
+        for key in ID2CN_MAPPING:
+            class_dict_cal[key] = 0
+        for idx in range(len(source_index_data)):
+            if class_dict_cal[source_index_data[idx][1][1]] < 10:
+                class_dict_cal[source_index_data[idx][1][1]] += 1
+                new_source_data.append(source_index_data[idx])
+            if sum([class_dict_cal[i] for i in class_dict_cal]) >= len(class_dict_cal) * 10:
+                break
+        source_index_data = new_source_data
+
     for item in source_index_data:
         item[1].append(ID2CN_MAPPING[item[1][1]])
     # 1.3 训练集测试集划分
-    train_list, test_list = train_test_split(source_index_data, test_size=TEST_SIZE, random_state=66)
+    if MODE != "FEW":
+        train_list, test_list = train_test_split(source_index_data, test_size=TEST_SIZE, random_state=66)
+    else:
+        train_list = source_index_data
+        test_list = toutiao_index_data[idx:idx + 1000]
+        for item in test_list:
+            item[1].append(ID2CN_MAPPING[item[1][1]])
 
     # 2. 创建索引并灌入数据
     # 2.1 构造索引
